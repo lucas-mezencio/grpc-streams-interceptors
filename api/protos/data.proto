@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+option go_package = "/data;data";
+
+import "google/protobuf/timestamp.proto";
+// import "google/protobuf/wrappers.proto";
+
+package proto;
+
+service Data {
+    rpc GetByID(Request) returns (Response);
+    rpc GetAll(Request) returns (stream Response);
+    rpc SendAll(stream Request) returns (Response);
+    rpc SandAndGetAll(stream Request) returns (stream Response);
+}
+
+message Request {
+    google.protobuf.Timestamp requestAt = 1;
+    string ID = 2;
+}
+
+message Response {
+    google.protobuf.Timestamp responseAt = 1;
+    string data = 2;
+}
+
