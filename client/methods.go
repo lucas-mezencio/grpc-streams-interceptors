@@ -6,6 +6,7 @@ import (
 	pb "grpc-adv/api/data"
 	"io"
 	"log"
+	"strconv"
 	"time"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -63,5 +64,42 @@ func GetClientStream(client pb.DataClient) error {
 		return fmt.Errorf("%v.CloseAndRecv() got error %w", stream, err)
 	}
 	log.Println(reply)
+	return nil
+}
+
+func GetBidirectional(client pb.DataClient) error {
+	stream, err := client.SandAndGetAll(context.Background())
+	if err != nil {
+		return fmt.Errorf("error bidirectional: %w", err)
+	}
+
+	waitc := make(chan struct{})
+	go func() {
+		for {
+			res, err := stream.Recv()
+			if err == io.EOF {
+				close(waitc)
+				return
+			}
+			if err != nil {
+				log.Fatalf("failed to receive: %v", err)
+			}
+			log.Printf("got res #%v\n", res.Data)
+		}
+	}()
+
+	for i := 0; i < 10; i++ {
+		if err := stream.Send(&pb.Request{
+			RequestAt: timestamppb.Now(),
+			ID:        strconv.Itoa(i),
+		}); err != nil {
+			return err
+		}
+	}
+	err = stream.CloseSend()
+	if err != nil {
+		return fmt.Errorf("error stream.CloseSend(): %w", err)
+	}
+	<-waitc
 	return nil
 }

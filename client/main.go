@@ -33,6 +33,12 @@ func main() {
 		log.Fatalln(err)
 	}
 
+	fmt.Println()
+	fmt.Println("bidirectional stream:")
+	err = GetBidirectional(client)
+	if err != nil {
+		log.Fatalln(err)
+	}
 }
 
 func GetClient() (*grpc.ClientConn, pb.DataClient) {
