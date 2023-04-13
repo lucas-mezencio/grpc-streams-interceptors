@@ -2,6 +2,7 @@ package main
 
 import (
 	pb "grpc-adv/api/data"
+	"grpc-adv/server/interceptor"
 	"log"
 	"net"
 
@@ -21,7 +22,10 @@ func (s *DataServer) Run() error {
 		log.Println("error running server")
 		return err
 	}
-	srv := grpc.NewServer()
+	srv := grpc.NewServer(
+		grpc.UnaryInterceptor(interceptor.UnaryServerInterceptor()),
+		grpc.StreamInterceptor(interceptor.StreamServerInterceptor()),
+	)
 	pb.RegisterDataServer(srv, s)
 	log.Println("server listening at", lis.Addr())
 

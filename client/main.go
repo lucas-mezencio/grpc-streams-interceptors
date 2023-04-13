@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	pb "grpc-adv/api/data"
+	"grpc-adv/client/interceptor"
 	"log"
 
 	"google.golang.org/grpc"
@@ -44,6 +45,8 @@ func main() {
 func GetClient() (*grpc.ClientConn, pb.DataClient) {
 	opts := []grpc.DialOption{
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithUnaryInterceptor(interceptor.ClientUnaryLoggingInterceptor),
+		grpc.WithStreamInterceptor(interceptor.ClientStreamLoggingInterceptor),
 	}
 	conn, err := grpc.Dial(":8000", opts...)
 	if err != nil {
